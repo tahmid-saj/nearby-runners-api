@@ -26,6 +26,7 @@
     "mongodb": "^6.17.0",
     "mongoose": "^8.15.1",
     "morgan": "^1.10.0",
+    "ngeohash": "^0.6.3",
     "redis": "^5.5.6",
     "redis-cli": "^2.1.2",
     "request": "^2.88.2",

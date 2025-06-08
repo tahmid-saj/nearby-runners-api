@@ -1,0 +1,9 @@
+deployment
+node_modules
+node_modules/
+
+tests
+deploy.sh
+*.pem
+
+.git/

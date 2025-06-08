@@ -5,6 +5,7 @@ require("dotenv").config()
 
 const { app } = require("./app");
 const { socketManager } = require("./controllers/controller-manager");
+const { redisConnect } = require("./services/redis/redis.service");
 
 const server = http.createServer(app);
 const PORT = process.env.PORT;
@@ -21,6 +22,8 @@ async function startServer() {
   });
 
   try {
+    await redisConnect()
+
     // initialize websocket
     socketManager(server);
 
