@@ -1,14 +1,13 @@
-import path from "path";
-import http from "http";
-import mongoose from "mongoose";
-import dotenv from "dotenv";
-dotenv.config();
+const path = require("path");
+const http = require("http");
+const mongoose = require("mongoose");
+require("dotenv").config()
 
-import { app } from "./app.ts";
-import { socketManager } from "./controllers/controller-manager.ts"
+const { app } = require("./app");
+const { socketManager } = require("./controllers/controller-manager");
 
-const server = http.createServer(app)
-const PORT = process.env.PORT
+const server = http.createServer(app);
+const PORT = process.env.PORT;
 
 async function startServer() {
   console.log("App is starting...");
@@ -19,20 +18,19 @@ async function startServer() {
 
   process.on('unhandledRejection', (reason) => {
     console.error('Unhandled Rejection:', reason);
-  })
+  });
 
   try {
     // initialize websocket
-    socketManager(server)
+    socketManager(server);
 
     server.listen(PORT, () => {
-      console.log(`Server listening on port ${PORT}`)
-    })
+      console.log(`Server listening on port ${PORT}`);
+    });
   } catch (err) {
     console.error("Fatal startup error: ", err);
     process.exit(1); // Optionally fail fast
   }
-
 }
 
-startServer()
+startServer();
