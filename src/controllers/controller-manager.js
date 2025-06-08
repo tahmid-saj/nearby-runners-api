@@ -41,7 +41,7 @@ const socketManager = async (server) => {
 
         switch (webSocketMessage.action) {
           case WEBSOCKET_MESSAGE_ACTIONS.subscribe: {
-            console.log(`Connected to: ${webSocketConnection}`);
+            console.log(`Connected to: ${webSocketMessage.userName}`);
 
             pubsubClients.set(webSocketConnection, {
               userName: webSocketMessage.userName,
@@ -51,6 +51,8 @@ const socketManager = async (server) => {
             if (!pubsubSubscriptions.has(webSocketMessage.channel)) {
               pubsubSubscriptions.add(webSocketMessage.channel);
 
+              // we'll subscribe to the channel, and when a new message is sent to the channel, the callback in 
+              // the subscribe() call will be triggered by redis pubsub
               await pubsubSubscriber.subscribe(webSocketMessage.channel, (message) => {
                 for (const [clientWebSocketConnection, clientInfo] of pubsubClients.entries()) {
                   if (
@@ -63,11 +65,12 @@ const socketManager = async (server) => {
               });
             }
 
-            console.log(`${webSocketMessage.username} subscribed to ${webSocketMessage.channel}`);
+            console.log(`${webSocketMessage.userName} subscribed to ${webSocketMessage.channel}`);
             break;
           }
 
           case WEBSOCKET_MESSAGE_ACTIONS.sendLocationUpdate: {
+            // the below publish() call will publish to the sender who sent the original message
             await pubsubPublisher.publish(
               webSocketMessage.channel,
               JSON.stringify({
@@ -76,14 +79,14 @@ const socketManager = async (server) => {
               })
             );
 
-            console.log(`${webSocketMessage.username} sent message to ${webSocketMessage.channel}`);
+            console.log(`${webSocketMessage.userName} sent message to ${webSocketMessage.channel}`);
             break;
           }
 
           case WEBSOCKET_MESSAGE_ACTIONS.unsubscribe: {
             await unsubscribe(webSocketConnection, pubsubSubscriber);
 
-            console.log(`${webSocketMessage.username} unsubscribed from ${webSocketMessage.channel}`);
+            console.log(`${webSocketMessage.userName} unsubscribed from ${webSocketMessage.channel}`);
             break;
           }
         }
@@ -93,7 +96,11 @@ const socketManager = async (server) => {
     });
 
     webSocketConnection.on("close", async () => {
-      await unsubscribe(webSocketConnection, pubsubSubscriber);
+      const pubsubClient = pubsubClients.get(webSocketConnection);
+      if (pubsubClient) {
+        await pubsubSubscriber.unsubscribe(pubsubClient.channel);
+        pubsubClients.delete(webSocketConnection);
+      }
     });
   });
 };

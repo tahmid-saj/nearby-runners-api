@@ -141,3 +141,7 @@ deployment
 
 # tests
 tests
+
+# aws
+*.pem
+*keypair.pem
