@@ -143,6 +143,8 @@ deploy.sh
 # tests
 tests
 
+out
+
 # aws
 *.pem
 *keypair.pem
