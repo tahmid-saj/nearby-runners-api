@@ -1,6 +1,6 @@
 
 // set containing pubsub channels
-const pubsubSubscriptionsKey = () => `pubsub-subscriptions`
+const pubsubSubscriptionsKey = () => `nearby-runners-subscriptions`
 
 module.exports = {
   pubsubSubscriptionsKey
