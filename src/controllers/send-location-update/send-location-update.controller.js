@@ -30,6 +30,7 @@ async function sendLocationUpdate(webSocketMessage, webSocketConnection) {
     userCurrentGeohash,
     JSON.stringify({
       userId: webSocketMessage.userId,
+      name: webSocketMessage.name,
       locationUpdate: webSocketMessage.location,
       channel: userCurrentGeohash
     })

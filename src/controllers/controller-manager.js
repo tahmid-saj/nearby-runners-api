@@ -5,6 +5,7 @@ const { WEBSOCKET_MESSAGE_ACTIONS } = require("../utils/constants/websocket.cons
 const { unsubscribeClient } = require("./unsubscribe/unsubscribe.controller");
 const { subscribeClient } = require('./subscribe/subscribe.controller');
 const { sendLocationUpdate } = require('./send-location-update/send-location-update.controller');
+const { GEOHASH_CHANNEL_PRECISION } = require('../utils/constants/geohash.constants');
 
 const socketManager = async (server) => {
   const webSocketServer = new WebSocket.Server({ server })
@@ -109,36 +110,6 @@ const socketManager = async (server) => {
     return [pubsubPublisher, pubsubSubscriber]
   }
 };
-
-const initializePubsubClient = async () => {
-  const pubsubPublisher = await createClient({
-    socket: {
-      host: process.env.REDIS_HOST,
-      port: parseInt(process.env.REDIS_PORT)
-    },
-    password: process.env.REDIS_PW
-  })
-  const pubsubSubscriber = await createClient({
-    socket: {
-      host: process.env.REDIS_HOST,
-      port: parseInt(process.env.REDIS_PORT)
-    },
-    password: process.env.REDIS_PW
-  })
-
-  await pubsubPublisher.connect();
-  await pubsubSubscriber.connect();
-
-  pubsubPublisher.on("error", (err) => {
-    console.log("Redis pubsub publisher error: ", err);
-  });
-
-  pubsubSubscriber.on("error", (err) => {
-    console.log("Redis pubsub subscriber error: ", err);
-  });
-
-  return [pubsubPublisher, pubsubSubscriber]
-}
 
 module.exports = { 
   socketManager

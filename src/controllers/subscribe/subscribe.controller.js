@@ -31,25 +31,32 @@ async function subscribeClient(webSocketMessage, webSocketConnection) {
   if (!pubsubChannelExists) {
     await addPubsubChannel(geohashChannel);
   }
-  
+
   // we'll subscribe to the channel, and when a new message is sent to the channel, the callback 
   // in the subscribe() call will be triggered by redis pubsub
 
-  // define and save the callback (we'll save the callback so that it can be safely unsubscribed from using the subscriber)
-  const callback = (locationUpdate) => {
-    for (const [clientWebSocketConnection, clientInfo] of pubsubClients.entries()) {
-      if (
-        clientInfo.channel === geohashChannel &&
-        clientWebSocketConnection.readyState === WebSocket.OPEN
-      ) {
-        clientWebSocketConnection.send(locationUpdate);
+  // define and save the callback (we'll save the callback so that it can be safely 
+  // unsubscribed from using the subscriber)
+  if (!channelCallbacks.has(geohashChannel)) {
+    const callback = (locationUpdate) => {
+      for (const [clientWebSocketConnection, clientInfo] of pubsubClients.entries()) {
+        if (
+          clientInfo.channel === geohashChannel &&
+          clientWebSocketConnection.readyState === WebSocket.OPEN
+        ) {
+          clientWebSocketConnection.send(locationUpdate);
+        }
       }
     }
+
+    // Save and subscribe with this callback
+    channelCallbacks.set(geohashChannel, callback)
+  
+    // Just use any one of the connected subscribers, they all go to the same Redis pubsub
+    const anyClient = [...pubsubClients.values()][0];
+    await anyClient.pubsubSubscriber.subscribe(geohashChannel, callback);
   }
 
-  channelCallbacks.set(geohashChannel, callback)
-
-  await pubsubClients.get(webSocketConnection).pubsubSubscriber.subscribe(geohashChannel, callback)
 
   console.log(`${webSocketMessage.userId} subscribed to ${geohashChannel}`);
 }
